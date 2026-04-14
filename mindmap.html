@@ -224,8 +224,12 @@ const data = {
       detail:"Fils de KARORI · Décédé 1997 · Époux de MUKABERA Eliane",
       children:[
         { id:"ca1", name:"MURINDWA Rafiki", type:"living", detail:"Fils de Boniface" },
-        { id:"ca2", name:"MURINDWA Chance", type:"living", detail:"Fils de Boniface" },
-        { id:"ca3", name:"UWAMAHORO Yvette", type:"living", detail:"Fille de Boniface" },
+        { id:"ca2", name:"MURINDWA Chance", type:"living", detail:"Fils de Boniface", children:[
+        {id:"ca2a", name:"Shami Murindwa\nLiam", type:"living", detail:"Ne 03/04/2018"}
+      ]},
+        { id:"ca3", name:"UWAMAHORO Yvette", type:"living", detail:"Epouse de MUNYENTWARI Didier", children:[
+        {id:"ca3a", name:"Ryan", type:"living", detail:"Fils de Yvette"}
+      ]},
         { id:"ca4", name:"Soleil", type:"living", detail:"Fille de Boniface" }
       ]
     },
@@ -242,7 +246,10 @@ const data = {
         { id:"cb5", name:"SINDIKUBWABO\nEmmanuel", type:"genocide", detail:"Tué à Gisenyi · Sa femme et son enfant tués à Kibuye" },
         { id:"cb6", name:"UWANYIRIJURU\nBeata", type:"deceased", detail:"†2008 · Enfants aux USA : Hertier, Maurice" },
         { id:"cb7", name:"KARANGWA\nAlex", type:"genocide", detail:"Tué près de la Mosquée à Gisenyi · Son assassin n'a jamais été emprisonné" },
-        { id:"cb8", name:"NIYOMUGABA\nDiane", type:"living", detail:"" }
+        { id:"cb8", name:"NIYOMUGABA\nDiane", type:"living", detail:"Fille de Leocadie", children:[
+        {id:"cb8a", name:"Gian", type:"living", detail:""},
+        {id:"cb8b", name:"Gianno", type:"living", detail:""}
+      ]}
       ]
     },
 
@@ -257,12 +264,39 @@ const data = {
       id:"cd", name:"[D] MUKAKAYONDO\nVenantie ✦", type:"living",
       detail:"Fille de KARORI · Seule enfant survivante · Épouse de MUNYANKINDI Jean De Dieu (†maladie, années récentes)",
       children:[
-        { id:"cd1", name:"MUGABO Bernard", type:"living", detail:"" },
-        { id:"cd2", name:"CYAMAKARE\nBonaventure", type:"living", detail:"" },
-        { id:"cd3", name:"MUNYANKINDI\nBenoit", type:"living", detail:"+ UWINEZA Providence → Iganza, Ethane" },
-        { id:"cd4", name:"MUNYANKINDI\nToussaint", type:"living", detail:"" },
-        { id:"cd5", name:"Agnes", type:"living", detail:"" },
-        { id:"cd6", name:"MUNYANKINDI\nHenry", type:"living", detail:"" },
+        { id:"cd1", name:"MUGABO Bernard", type:"living", detail:"Epoux de Farhiya Sheikh", children:[
+        {id:"cd1a", name:"Christian Mugabo", type:"living", detail:"Ne 12/12/2014"},
+        {id:"cd1b", name:"Ornella Mugabo", type:"living", detail:"Nee 08/11/2017"},
+        {id:"cd1c", name:"Ineza Tianna", type:"living", detail:"Nee 17/06/2020"},
+        {id:"cd1d", name:"Jean Kaiden", type:"living", detail:"Ne 24/06/2023"}
+      ]},
+        { id:"cd2", name:"CYAMAKARE\nBonaventure", type:"living", detail:"Epoux de Doro", children:[
+        {id:"cd2a", name:"Sine Keren", type:"living", detail:"Nee 11/09/2001"},
+        {id:"cd2b", name:"Shimwa Jeyz", type:"living", detail:"Ne 26/10/2003"},
+        {id:"cd2c", name:"Atete Hirwa\nJessica", type:"living", detail:"Nee 27/02/2006"},
+        {id:"cd2d", name:"Isaro Jensina", type:"living", detail:"Jumelle nee 30/12/2012"},
+        {id:"cd2e", name:"Inoni Jensen", type:"living", detail:"Jumeau ne 30/12/2012"},
+        {id:"cd2f", name:"Ikirezi Jeiro", type:"living", detail:"Ne 30/03/2014"}
+      ]},
+        { id:"cd3", name:"MUNYANKINDI\nBenoit", type:"living", detail:"Epoux de UWINEZA Providence", children:[
+        {id:"cd3a", name:"Iganze Nkindi\nUriel", type:"living", detail:"Ne 02/01/2016"},
+        {id:"cd3b", name:"Ineza Nkindi\nEthan", type:"living", detail:"Ne 27/04/2018"},
+        {id:"cd3c", name:"Tuza Nkindi\nJanoah", type:"living", detail:"Ne 17/06/2025"}
+      ]},
+        { id:"cd4", name:"MUNYANKINDI\nToussaint", type:"living", detail:"Epoux de IRADUKUNDA Marie Victoire", children:[
+        {id:"cd4a", name:"Arame Naomi\nAnike", type:"living", detail:""},
+        {id:"cd4b", name:"Mael Mpano\nBenson", type:"living", detail:""}
+      ]},
+        { id:"cd5", name:"Agnes Nikuze", type:"living", detail:"Epouse de NIYONGOMA Madjaliwa", children:[
+        {id:"cd5a", name:"Manzi Spassiva", type:"living", detail:""},
+        {id:"cd5b", name:"Nganji Heri\nSavant", type:"living", detail:""},
+        {id:"cd5c", name:"Iriza Izza\nAnissah", type:"living", detail:""},
+        {id:"cd5d", name:"Akariza Del'Or\nAnillah", type:"living", detail:""}
+      ]},
+        { id:"cd6", name:"MUNYANKINDI\nHenry", type:"living", detail:"Epoux de Mabengeza Friday", children:[
+        {id:"cd6a", name:"Ishimwe Ruth\nHenritte", type:"living", detail:""},
+        {id:"cd6b", name:"Gwiza Munyankindi\nCaleb", type:"living", detail:""}
+      ]},
         { id:"cd7", name:"BAGABO Daddy", type:"living", detail:"" }
       ]
     },
@@ -305,8 +339,8 @@ const data = {
       detail:"Fille de KARORI · Victime 1994 · Époux KARANGIRA Laurent",
       children:[
         { id:"ch1", name:"MUKAKARAKE\nVestine", type:"living", detail:"Épouse de KAYIGEMA Guillaume", children:[
-          {id:"ch1a", name:"Nixie", type:"living", detail:"Fille de Vestine"},
-          {id:"ch1b", name:"Nicky", type:"living", detail:"Fils de Vestine"}
+          {id:"ch1a", name:"ISHIMWE K. Nixie", type:"living", detail:"Nee 26/03/2013"},
+          {id:"ch1b", name:"IHIRWE K. Nicky", type:"living", detail:"Ne 10/02/2016"}
         ]},
         { id:"ch2", name:"KAKUZE\nAthanasie", type:"genocide", detail:"Jumelle · Victime du Génocide · Lieu inconnu" },
         { id:"ch3", name:"NIKUZE\nAthanase", type:"genocide", detail:"Jumeau · Victime du Génocide · Lieu inconnu" }
@@ -338,7 +372,7 @@ const data = {
         {id:"ci3d", name:"ISHIMWE Rodrigue", type:"living", detail:"Vit à Kigali"},
         {id:"ci3e", name:"UWINEZA Benitha", type:"living", detail:"5eme enfant de Florence"}
       ]},
-        { id:"ci4", name:"MANZI Felicien\nReagan ★", type:"living", detail:"Surnom familial : Reagan · Namur, Belgique · Petit-fils de KARORI · Avec Françoise et leur père 2h avant sa mort" },
+        { id:"ci4", name:"MANZI Felicien\nReagan ★", type:"living", detail:"Namur, Belgique" },
         { id:"ci5", name:"UMUTONI Françoise\n(Mawuwa)", type:"living", detail:"Surnom : Mawuwa · Avec Reagan et leur père 2h avant sa mort", children:[
         {id:"ci5a", name:"IRADUKUNDA Ivan", type:"living", detail:"1er enfant de Françoise"},
         {id:"ci5b", name:"AGAHOZO Honnête", type:"living", detail:"2eme enfant de Françoise"},
