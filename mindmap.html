@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Map — Umuryango wa Karori na Leoncie</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #07070a;
+  font-family: 'Cinzel', serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#bg-glow {
+  position: fixed; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(201,165,71,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 20% 80%, rgba(122,21,37,0.05) 0%, transparent 50%);
+}
+
+#header {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(7,7,10,0.92);
+  border-bottom: 1px solid #1a1a24;
+  backdrop-filter: blur(8px);
+}
+
+.h-title {
+  font-size: 13px; letter-spacing: 0.25em;
+  color: #c9a547; text-transform: uppercase;
+}
+.h-sub {
+  font-size: 10px; letter-spacing: 0.15em;
+  color: #5b6270; margin-top: 2px;
+  font-family: 'EB Garamond', serif; font-style: italic;
+}
+
+.h-controls { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  padding: 5px 12px;
+  background: rgba(201,165,71,0.08);
+  border: 1px solid rgba(201,165,71,0.3);
+  border-radius: 4px;
+  color: #c9a547; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; font-family: 'Cinzel', serif;
+  transition: all 0.15s;
+}
+.btn:hover { background: rgba(201,165,71,0.16); }
+
+#legend {
+  position: fixed; bottom: 16px; left: 16px;
+  z-index: 100;
+  background: rgba(7,7,10,0.9);
+  border: 1px solid #1a1a24;
+  border-radius: 6px;
+  padding: 10px 14px;
+  backdrop-filter: blur(6px);
+}
+.leg { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.leg:last-child { margin-bottom: 0; }
+.leg-c {
+  width: 10px; height: 10px; border-radius: 50%; border: 2px solid; flex-shrink: 0;
+}
+.leg-t { font-size: 9px; letter-spacing: 0.08em; color: #6b7280; }
+
+#tooltip {
+  position: fixed; z-index: 200;
+  background: rgba(10,10,16,0.97);
+  border: 1px solid #2a2a38;
+  border-radius: 6px;
+  padding: 10px 14px;
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.15s;
+  max-width: 220px;
+}
+.tt-name { font-size: 12px; color: #e2c97e; margin-bottom: 4px; letter-spacing: 0.04em; }
+.tt-detail { font-size: 11px; color: #6b7280; font-family: 'EB Garamond', serif; font-style: italic; line-height: 1.5; }
+
+#hint {
+  position: fixed; bottom: 16px; right: 16px;
+  font-size: 10px; color: #2d3040;
+  letter-spacing: 0.08em; text-align: right;
+  font-family: 'EB Garamond', serif; font-style: italic;
+  pointer-events: none;
+}
+
+svg { display: block; }
+
+.link {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.node circle {
+  stroke-width: 2;
+  transition: r 0.2s;
+  cursor: pointer;
+}
+.node circle:hover { stroke-width: 3; }
+
+.node text {
+  font-family: 'Cinzel', serif;
+  dominant-baseline: central;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.node .badge {
+  font-size: 8px;
+  fill: #3b82f6;
+}
+</style>
+</head>
+<body>
+
+<div id="bg-glow"></div>
+
+<div id="header">
+  <div>
+    <div class="h-title">Umuryango wa Karori na Leoncie — Mind Map</div>
+    <div class="h-sub">Arbre généalogique étendu · Cliquez pour développer · Pincez pour zoomer</div>
+  </div>
+  <div class="h-controls">
+    <button class="btn" onclick="expandAll()">Tout ouvrir</button>
+    <button class="btn" onclick="collapseAll()">Tout fermer</button>
+    <button class="btn" onclick="resetZoom()">⌖ Centrer</button>
+  </div>
+</div>
+
+<svg id="mindmap"></svg>
+
+<div id="legend">
+  <div class="leg"><div class="leg-c" style="border-color:#c9a547;background:rgba(201,165,71,0.2)"></div><div class="leg-t">Ancêtre / Fondateur</div></div>
+  <div class="leg"><div class="leg-c" style="border-color:#4a7c5a;background:rgba(74,124,90,0.2)"></div><div class="leg-t">Vivant(e)</div></div>
+  <div class="leg"><div class="leg-c" style="border-color:#7a1525;background:rgba(122,21,37,0.3)"></div><div class="leg-t">Victime du Génocide</div></div>
+  <div class="leg"><div class="leg-c" style="border-color:#374151;background:rgba(55,65,81,0.2)"></div><div class="leg-t">Décédé(e)</div></div>
+  <div class="leg"><div class="leg-c" style="border-color:#3b82f6;background:rgba(59,130,246,0.25)"></div><div class="leg-t">Felicien (vous)</div></div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-detail" id="tt-detail"></div>
+</div>
+
+<div id="hint">🖱 Glisser · Molette pour zoomer<br>Cliquer sur un nœud pour ouvrir/fermer</div>
+
+<script>
+// ── PALETTE ────────────────────────────────────────────
+const C = {
+  root:    { fill:'rgba(201,165,71,0.22)', stroke:'#c9a547', text:'#e2c97e', link:'#c9a547' },
+  ancestor:{ fill:'rgba(201,165,71,0.12)', stroke:'#9b7d35', text:'#c9a547', link:'#7a6030' },
+  group:   { fill:'rgba(40,40,60,0.5)',    stroke:'#3a3a55', text:'#8890a8', link:'#2a2a40' },
+  living:  { fill:'rgba(58,107,74,0.18)',  stroke:'#4a7c5a', text:'#8abf9a', link:'#3a6a4a' },
+  genocide:{ fill:'rgba(122,21,37,0.22)',  stroke:'#7a1525', text:'#f87171', link:'#5a1020' },
+  deceased:{ fill:'rgba(40,48,60,0.25)',   stroke:'#374151', text:'#7a8898', link:'#2a3040' },
+  me:      { fill:'rgba(59,130,246,0.2)',  stroke:'#3b82f6', text:'#93c5fd', link:'#2060d0' },
+  special: { fill:'rgba(180,140,60,0.2)',  stroke:'#b08c3c', text:'#d4b06a', link:'#806830' },
+};
+
+// ── DATA ───────────────────────────────────────────────
+const data = {
+  id:"root", name:"UMURYANGO\nWA KARORI", type:"root",
+  detail:"MUHUTU Charles (KARORI) †1992 · Époux de KARUSHONGA Leoncie · Parents de 10 enfants",
+  children:[
+
+    // ── ASCENDANTS PATERNELS ──────────────────────────
+    {
+      id:"pat", name:"LIGNE\nPATERNELLE", type:"group",
+      detail:"Ascendants directs de KARORI",
+      children:[
+        {
+          id:"semuzima", name:"SEMUZIMA", type:"ancestor",
+          detail:"Père de MUHUTU Charles (KARORI)",
+          children:[
+            {
+              id:"karori_node", name:"MUHUTU Charles\n(KARORI)", type:"ancestor",
+              detail:"Époux de KARUSHONGA Leoncie · Père de 10 enfants · Fondateur de la lignée"
+            },
+            {
+              id:"murindwa_br", name:"MURINDWA\n(frère)", type:"deceased",
+              detail:"Autre fils de SEMUZIMA · Lignée partiellement documentée"
+            }
+          ]
+        }
+      ]
+    },
+
+    // ── FAMILLE BAJIJI (Ascendants de Leoncie) ────────
+    {
+      id:"bajiji", name:"FAMILLE\nBAJIJI", type:"group",
+      detail:"Ascendants de KARUSHONGA Leoncie, épouse de KARORI",
+      children:[
+        {
+          id:"bajiji_c", name:"BAJIJI Paul\n× NYIRABANTU Anne", type:"ancestor",
+          detail:"Parents de KARUSHONGA Leoncie · 8 enfants",
+          children:[
+            { id:"bj1", name:"NYIRAMAKUMI\nGenereuse [1]", type:"living", detail:"Fille aînée de BAJIJI" },
+            { id:"bj2", name:"KARUSHONGA\nLeoncie [2] ♡", type:"special", detail:"Grand-mère maternelle de Felicien Reagan · Épouse de KARORI · Mère des 10 enfants de la lignée" },
+            { id:"bj3", name:"NYAMIRONKO\nThadeo [3]", type:"deceased", detail:"Fils de BAJIJI" },
+            { id:"bj4", name:"MUNYAMBIBI [4]", type:"deceased", detail:"Fils de BAJIJI" },
+            { id:"bj5", name:"Stephano [5]", type:"deceased", detail:"Famille décimée" },
+            { id:"bj6", name:"KAMPOGO\nMelanie [6]", type:"living", detail:"Fille de BAJIJI" },
+            { id:"bj7", name:"MUKARUBEGA\nDevotha [7]", type:"living", detail:"Fille de BAJIJI" },
+            { id:"bj8", name:"Isaias [8]", type:"deceased", detail:"Fils de BAJIJI" }
+          ]
+        }
+      ]
+    },
+
+    // ── [A] KAGABO BONIFACE ────────────────────────────
+    {
+      id:"ca", name:"[A] KAGABO\nBoniface", type:"deceased",
+      detail:"Fils de KARORI · Décédé 1997 · Époux de MUKABERA Eliane",
+      children:[
+        { id:"ca1", name:"MURINDWA Rafiki", type:"living", detail:"Fils de Boniface" },
+        { id:"ca2", name:"MURINDWA Chance", type:"living", detail:"Fils de Boniface" },
+        { id:"ca3", name:"UWAMAHORO Yvette", type:"living", detail:"Fille de Boniface" },
+        { id:"ca4", name:"Soleil", type:"living", detail:"Fille de Boniface" }
+      ]
+    },
+
+    // ── [B] LEOCADIE ───────────────────────────────────
+    {
+      id:"cb", name:"[B] MUKARUBAYIZA\nLeocadie", type:"genocide",
+      detail:"Fille de KARORI · Victime 1994 · Épouse de NZAMWITA Paul",
+      children:[
+        { id:"cb1", name:"USABYIMBABAZI\nEugenie", type:"living", detail:"+ NSABIYERA Gaspard → Alice, Jean Paul, Odile" },
+        { id:"cb2", name:"NZABANITA\nEugene", type:"living", detail:"" },
+        { id:"cb3", name:"NDUWAYEZU\nLeonard", type:"living", detail:"+ Immaculee → Shukuru, Riziki, Dorcas" },
+        { id:"cb4", name:"MUKAYIRANGA\nOdette", type:"living", detail:"→ Izabayo, Divine" },
+        { id:"cb5", name:"SINDIKUBWABO\nEmmanuel", type:"genocide", detail:"Tué à Gisenyi · Sa femme et son enfant tués à Kibuye" },
+        { id:"cb6", name:"UWANYIRIJURU\nBeata", type:"deceased", detail:"†2008 · Enfants aux USA : Hertier, Maurice" },
+        { id:"cb7", name:"KARANGWA\nAlex", type:"genocide", detail:"Tué près de la Mosquée à Gisenyi · Son assassin n'a jamais été emprisonné" },
+        { id:"cb8", name:"NIYOMUGABA\nDiane", type:"living", detail:"" }
+      ]
+    },
+
+    // ── [C] VERENA ─────────────────────────────────────
+    {
+      id:"cc", name:"[C] KANYOMBERA\nVerena", type:"genocide",
+      detail:"Fille de KARORI · Victime à Tegwe 1994 · Jamais mariée"
+    },
+
+    // ── [D] VENANCIE ───────────────────────────────────
+    {
+      id:"cd", name:"[D] MUKAKAYONDO\nVenantie ✦", type:"living",
+      detail:"Fille de KARORI · Seule enfant survivante · Épouse de MUNYANKINDI Jean De Dieu (†maladie, années récentes)",
+      children:[
+        { id:"cd1", name:"MUGABO Bernard", type:"living", detail:"" },
+        { id:"cd2", name:"CYAMAKARE\nBonaventure", type:"living", detail:"" },
+        { id:"cd3", name:"MUNYANKINDI\nBenoit", type:"living", detail:"+ UWINEZA Providence → Iganza, Ethane" },
+        { id:"cd4", name:"MUNYANKINDI\nToussaint", type:"living", detail:"" },
+        { id:"cd5", name:"Agnes", type:"living", detail:"" },
+        { id:"cd6", name:"MUNYANKINDI\nHenry", type:"living", detail:"" },
+        { id:"cd7", name:"BAGABO Daddy", type:"living", detail:"" }
+      ]
+    },
+
+    // ── [E] AGATHE ─────────────────────────────────────
+    {
+      id:"ce", name:"[E] MUKAMBARAGA\nAgathe", type:"genocide",
+      detail:"Fille de KARORI · Famille entièrement décimée · Époux RWABIRINDA Emmanuel",
+      children:[
+        { id:"ce1", name:"MUTUYEYEZU\nDamascene", type:"genocide", detail:"Victime du Génocide" },
+        { id:"ce2", name:"DUSABIMANA\nToto", type:"genocide", detail:"Mort à Mwibonde · Inhumé à la Commune Rouge" },
+        { id:"ce3", name:"Tuyisenge", type:"genocide", detail:"Victime du Génocide" },
+        { id:"ce4", name:"Habamenshi", type:"genocide", detail:"Trouvé sous la maison à Tegwe · Inhumé à Mushubati" },
+        { id:"ce5", name:"NSHIMYIMANA", type:"genocide", detail:"5eme enfant d\'Agathe · Trouvé sous la maison à Tegwe · Inhumé à Mushubati" }
+      ]
+    },
+
+    // ── [F] PATRICIE ───────────────────────────────────
+    {
+      id:"cf", name:"[F] UZABUMWANA\nPatricie", type:"deceased",
+      detail:"Fille de KARORI · †~2022 · Époux belge",
+      children:[
+        { id:"cf1", name:"Yves Noël", type:"deceased", detail:"Fils aîné · †2008" },
+        { id:"cf2", name:"Arlette Noël", type:"living", detail:"Fille · Belgique" }
+      ]
+    },
+
+    // ── [G] PULCHÉRIE ───────────────────────────────────
+    {
+      id:"cg", name:"[G] NYIRABANYIGINYA\nPulchérie", type:"genocide",
+      detail:"Fille de KARORI · Victime 1994 · Époux Francois",
+      children:[
+        { id:"cg1", name:"KARENZI", type:"living", detail:"" }
+      ]
+    },
+
+    // ── [H] EUTHALIE ───────────────────────────────────
+    {
+      id:"ch", name:"[H] KAMPORORO\nEuthalie", type:"genocide",
+      detail:"Fille de KARORI · Victime 1994 · Époux KARANGIRA Laurent",
+      children:[
+        { id:"ch1", name:"MUKAKARAKE\nVestine", type:"living", detail:"Épouse de KAYIGEMA Guillaume", children:[
+          {id:"ch1a", name:"Nixie", type:"living", detail:"Fille de Vestine"},
+          {id:"ch1b", name:"Nicky", type:"living", detail:"Fils de Vestine"}
+        ]},
+        { id:"ch2", name:"KAKUZE\nAthanasie", type:"genocide", detail:"Jumelle · Victime du Génocide · Lieu inconnu" },
+        { id:"ch3", name:"NIKUZE\nAthanase", type:"genocide", detail:"Jumeau · Victime du Génocide · Lieu inconnu" }
+      ]
+    },
+
+    // ── [I] DANSILLE ───────────────────────────────────
+    {
+      id:"ci", name:"[I] MUKASARASI\nDansille", type:"genocide",
+      detail:"Fille de KARORI · Victime 1994 · Époux BUTERA François · Mère de Felicien",
+      children:[
+        { id:"ci1", name:"BUTERA Félix\n(Fils)", type:"living", detail:"Surnom : Fils · Vit en Belgique (Namur)", children:[
+          {id:"ci1a", name:"MANZI Gabriel", type:"living", detail:"Fils de Félix · Vit en Belgique · Arrivé en 2019"}
+        ]},
+        { id:"ci2", name:"UMUTESI\nFélicité (Fifi)", type:"living", detail:"Surnom : Fifi", children:[
+        {id:"ci2a", name:"BIKORIMANA\nChristian", type:"living", detail:"Fils de Félicité"},
+        {id:"ci2b", name:"UMUTONIWASE\nChristelle", type:"living", detail:"Surnom : Fillette", children:[
+          {id:"ci2b1", name:"NGONGO\nJoffin Gaven", type:"living", detail:"Petit-enfant de Félicité"},
+          {id:"ci2b2", name:"UWAYEZU\nRwacu Costa", type:"living", detail:"Petit-enfant de Félicité"}
+        ]},
+        {id:"ci2c", name:"KWIZERA Chrispin\n(Dieume)", type:"living", detail:"3ème enfant de Félicité"},
+        {id:"ci2d", name:"IRAKOZE Christophe", type:"living", detail:"Fils de Félicité"},
+        {id:"ci2e", name:"MPANO\nChris Spencer", type:"living", detail:"5ème enfant de Félicité"}
+      ]},
+        { id:"ci3", name:"UWASE Florence\n(Mignone)", type:"living", detail:"Surnom : Mignone · Laissée seule par les Belges à Ederwese · Survécue, fuite au Congo", children:[
+        {id:"ci3a", name:"SIFA Inesi\n(Bébé)", type:"living", detail:"1ere enfant de Florence"},
+        {id:"ci3b", name:"MWAMI Sammuel\n(Sammy)", type:"living", detail:"Vit en Afrique du Sud"},
+        {id:"ci3c", name:"BORA Uzima\n(Bénigne)", type:"living", detail:"3eme enfant de Florence"},
+        {id:"ci3d", name:"ISHIMWE Rodrigue", type:"living", detail:"Vit à Kigali"},
+        {id:"ci3e", name:"UWINEZA Benitha", type:"living", detail:"5eme enfant de Florence"}
+      ]},
+        { id:"ci4", name:"MANZI Felicien\nReagan ★", type:"living", detail:"Surnom familial : Reagan · Namur, Belgique · Petit-fils de KARORI · Avec Françoise et leur père 2h avant sa mort" },
+        { id:"ci5", name:"UMUTONI Françoise\n(Mawuwa)", type:"living", detail:"Surnom : Mawuwa · Avec Reagan et leur père 2h avant sa mort", children:[
+        {id:"ci5a", name:"IRADUKUNDA Ivan", type:"living", detail:"1er enfant de Françoise"},
+        {id:"ci5b", name:"AGAHOZO Honnête", type:"living", detail:"2eme enfant de Françoise"},
+        {id:"ci5c", name:"KEZA Olga", type:"living", detail:"3eme enfant de Françoise"},
+        {id:"ci5d", name:"IGANZE Sharmant", type:"living", detail:"4eme enfant de Françoise"},
+        {id:"ci5e", name:"MANZI Octave", type:"living", detail:"5eme enfant de Françoise"}
+      ]}
+      ]
+    },
+
+    // ── [J] DEOGRATIUS ─────────────────────────────────
+    {
+      id:"cj", name:"[J] TWAYIGIZE\nDeogratius", type:"deceased",
+      detail:"Né et décédé en 1973 (nourrisson) · Avant le Génocide"
+    }
+  ]
+};
+
+// ── D3 SETUP ───────────────────────────────────────────
+const svg = d3.select("#mindmap")
+  .attr("width", window.innerWidth)
+  .attr("height", window.innerHeight);
+
+const g = svg.append("g");
+
+const zoom = d3.zoom()
+  .scaleExtent([0.15, 4])
+  .on("zoom", e => g.attr("transform", e.transform));
+
+svg.call(zoom);
+
+// Initial transform
+const cx = window.innerWidth / 2;
+const cy = window.innerHeight / 2;
+const initialTransform = d3.zoomIdentity.translate(cx, cy).scale(0.72);
+
+// Build hierarchy
+let root = d3.hierarchy(data);
+
+// Collapse levels >= 2 initially
+root.descendants().forEach(d => {
+  if (d.depth >= 2 && d.children) {
+    d._children = d.children;
+    d.children = null;
+  }
+});
+
+// ── TREE LAYOUT ────────────────────────────────────────
+function getTree() {
+  return d3.tree()
+    .size([2 * Math.PI, 520])
+    .separation((a, b) => {
+      const base = a.parent === b.parent ? 1 : 1.5;
+      return base / (a.depth || 1);
+    });
+}
+
+// ── LINK PATH ─────────────────────────────────────────
+function radialLink(d) {
+  const sx = d.source.y * Math.cos(d.source.x - Math.PI / 2);
+  const sy = d.source.y * Math.sin(d.source.x - Math.PI / 2);
+  const tx = d.target.y * Math.cos(d.target.x - Math.PI / 2);
+  const ty = d.target.y * Math.sin(d.target.x - Math.PI / 2);
+  const mx = (sx + tx) / 2;
+  const my = (sy + ty) / 2;
+  // Bezier through midpoint
+  return `M${sx},${sy} Q${mx * 1.1},${my * 1.1} ${tx},${ty}`;
+}
+
+// ── NODE RADIUS ────────────────────────────────────────
+function nodeR(d) {
+  if (d.depth === 0) return 42;
+  if (d.depth === 1) return d.data.type === 'group' ? 22 : 18;
+  return 13;
+}
+
+function fontSize(d) {
+  if (d.depth === 0) return 11;
+  if (d.depth === 1) return 9;
+  return 8;
+}
+
+// ── TOOLTIP ────────────────────────────────────────────
+const tooltip = document.getElementById("tooltip");
+const ttName = document.getElementById("tt-name");
+const ttDetail = document.getElementById("tt-detail");
+
+function showTooltip(event, d) {
+  if (!d.data.detail) return;
+  ttName.textContent = d.data.name.replace(/\n/g, ' ');
+  ttDetail.textContent = d.data.detail;
+  tooltip.style.opacity = 1;
+  tooltip.style.left = (event.clientX + 14) + "px";
+  tooltip.style.top  = (event.clientY - 10) + "px";
+}
+function hideTooltip() { tooltip.style.opacity = 0; }
+
+// ── UPDATE ─────────────────────────────────────────────
+function update(source) {
+  const tree = getTree();
+  tree(root);
+
+  const duration = 400;
+  const nodes = root.descendants();
+  const links = root.links();
+
+  // ── LINKS
+  const link = g.selectAll(".link")
+    .data(links, d => d.target.data.id);
+
+  link.join(
+    enter => enter.append("path")
+      .attr("class", "link")
+      .attr("d", d => {
+        const o = {x: source.x0 || source.x, y: source.y0 || source.y};
+        return radialLink({source: o, target: o});
+      })
+      .attr("stroke", d => (C[d.target.data.type] || C.living).link)
+      .attr("stroke-width", d => Math.max(1, 2.5 - d.target.depth * 0.6))
+      .attr("opacity", 0.5)
+      .transition().duration(duration)
+      .attr("d", radialLink),
+
+    update => update.transition().duration(duration)
+      .attr("d", radialLink)
+      .attr("stroke", d => (C[d.target.data.type] || C.living).link),
+
+    exit => exit.transition().duration(duration)
+      .attr("d", d => {
+        const o = {x: source.x, y: source.y};
+        return radialLink({source: o, target: o});
+      })
+      .remove()
+  );
+
+  // ── NODES
+  const node = g.selectAll(".node")
+    .data(nodes, d => d.data.id);
+
+  const nodeEnter = node.enter().append("g")
+    .attr("class", "node")
+    .attr("transform", d => {
+      const px = (source.x0 || source.x);
+      const py = (source.y0 || source.y);
+      const x = py * Math.cos(px - Math.PI/2);
+      const y = py * Math.sin(px - Math.PI/2);
+      return `translate(${x},${y})`;
+    })
+    .style("opacity", 0)
+    .on("click", (event, d) => { event.stopPropagation(); toggle(d); })
+    .on("mouseenter", (event, d) => showTooltip(event, d))
+    .on("mouseleave", hideTooltip);
+
+  const cfg = d => C[d.data.type] || C.living;
+
+  // Circle
+  nodeEnter.append("circle")
+    .attr("r", nodeR)
+    .attr("fill", d => cfg(d).fill)
+    .attr("stroke", d => cfg(d).stroke);
+
+  // Expand indicator dot
+  nodeEnter.append("circle")
+    .attr("class", "dot")
+    .attr("r", 3)
+    .attr("cy", d => nodeR(d) - 1)
+    .attr("fill", d => cfg(d).stroke)
+    .attr("opacity", d => (d._children || d.children) && d.depth > 0 ? 0.8 : 0);
+
+  // Text lines
+  nodeEnter.each(function(d) {
+    const el = d3.select(this);
+    const lines = d.data.name.split('\n');
+    const fs = fontSize(d);
+    const lh = fs + 3;
+    const totalH = (lines.length - 1) * lh;
+
+    lines.forEach((line, i) => {
+      el.append("text")
+        .attr("y", -totalH/2 + i * lh)
+        .attr("text-anchor", "middle")
+        .attr("fill", cfg(d).text)
+        .style("font-size", fs + "px")
+        .style("font-weight", d.depth <= 1 ? "600" : "400")
+        .text(line);
+    });
+  });
+
+  // Merge and transition
+  const nodeUpdate = nodeEnter.merge(node);
+
+  nodeUpdate.transition().duration(duration)
+    .attr("transform", d => {
+      const x = d.y * Math.cos(d.x - Math.PI/2);
+      const y = d.y * Math.sin(d.x - Math.PI/2);
+      return `translate(${x},${y})`;
+    })
+    .style("opacity", 1);
+
+  // Update dot visibility
+  nodeUpdate.select(".dot")
+    .attr("opacity", d => (d._children || d.children) && d.depth > 0 ? 0.8 : 0);
+
+  // Exit
+  node.exit().transition().duration(duration)
+    .attr("transform", d => {
+      const x = source.y * Math.cos(source.x - Math.PI/2);
+      const y = source.y * Math.sin(source.x - Math.PI/2);
+      return `translate(${x},${y})`;
+    })
+    .style("opacity", 0)
+    .remove();
+
+  // Save positions
+  nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+}
+
+// ── TOGGLE ────────────────────────────────────────────
+function toggle(d) {
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else if (d._children) {
+    d.children = d._children;
+    d._children = null;
+  }
+  update(d);
+}
+
+// ── EXPAND ALL ────────────────────────────────────────
+function expandAll() {
+  root.descendants().forEach(d => {
+    if (d._children) { d.children = d._children; d._children = null; }
+  });
+  update(root);
+}
+
+function collapseAll() {
+  root.descendants().forEach(d => {
+    if (d.depth >= 2 && d.children) { d._children = d.children; d.children = null; }
+  });
+  update(root);
+}
+
+function resetZoom() {
+  svg.transition().duration(500)
+    .call(zoom.transform, initialTransform);
+}
+
+// ── INIT ──────────────────────────────────────────────
+root.x0 = 0; root.y0 = 0;
+svg.call(zoom.transform, initialTransform);
+update(root);
+
+// ── RESIZE ────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  svg.attr("width", window.innerWidth).attr("height", window.innerHeight);
+});
+</script>
+</body>
+</html>
